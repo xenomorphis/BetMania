@@ -80,7 +80,7 @@ class BetMania(AppConfig):
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: We don\'t have an active bet at the moment.', player)
 
     async def resolve_bet(self, player, data, **kwargs):
-        # BROKEN!
+        # Needs testing
         # Sets bet to closed and immediately resolves it
         if self.bet_current:
             self.bet_open = False
@@ -88,10 +88,18 @@ class BetMania(AppConfig):
             if data.team in self.teams:
                 # data.team contains the winning team as provided by /resolve <team>
                 stake = self.stack_blue + self.stack_red
-                quota_red = round(stake / self.stack_red, 3)
-                quota_blue = round(stake / self.stack_blue, 3)
 
                 if stake > 0:
+                    if self.stack_red > 0:
+                        quota_red = round(stake / self.stack_red, 3)
+                    else:
+                        quota_red = 0
+
+                    if self.stack_blue > 0:
+                        quota_blue = round(stake / self.stack_blue, 3)
+                    else:
+                        quota_blue = 0
+
                     await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET PAYOUTS!!!')
 
                     if data.team == 'blue':
