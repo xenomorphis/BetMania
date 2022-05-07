@@ -16,11 +16,11 @@ the commands are well hidden behind stylish little buttons.
 
 **Administrative commands**
 
-``/openbet``
+``//openbet``
     | *Admin Level 1*
     | Initializes the betting system and enables placing bets.
 
-``/closebet``
+``//closebet``
     | *Admin Level 1*
     | Closes an opened bet for new stakes.
 
@@ -36,7 +36,7 @@ the commands are well hidden behind stylish little buttons.
 
 **Development commands**
 
-``/bmdebug``
+``//bmdebug``
     | *Admin Level 3*
     | Outputs current values of almost every plugin variable. Needed occasionally during the development process. Will be removed once plugin is stable.
 
