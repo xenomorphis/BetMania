@@ -23,7 +23,6 @@ class TransactionHelper(AppConfig):
 
         self.current_bills = dict()
         self.min_donation = 10
-        self.public_appreciation = 100
         self.lock = asyncio.Lock()
 
     async def on_start(self):
@@ -43,14 +42,10 @@ class TransactionHelper(AppConfig):
         try:
             async with self.lock:
                 amount = abs(int(data.amount))
-                if amount >= self.min_donation:
-                    bill_id = await self.instance.gbx('SendBill', player.login, amount,
-                                                      'BetMania: Paying {} planets as stake for a bet!'.format(amount),
-                                                      '')
-                    self.current_bills[bill_id] = dict(bill=bill_id, player=player, amount=amount)
-                else:
-                    message = '$i$f00You need to bet at least $fff{}$f00 planets.'.format(self.min_donation)
-                    await self.instance.chat(message, player)
+                bill_id = await self.instance.gbx('SendBill', player.login, amount,
+                                                  'BetMania: Paying {} planets as stake for a bet!'.format(amount), '')
+                self.current_bills[bill_id] = dict(bill=bill_id, player=player, amount=amount)
+
         except ValueError:
             message = '$i$f00The amount should be a numeric value.'
             await self.instance.chat(message, player)
