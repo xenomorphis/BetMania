@@ -163,6 +163,8 @@ class BetMania(AppConfig):
             self.supporters_blue.clear()
 
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET IS CANCELLED! You\'ll receive your Planets back.')
+        else:
+            await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: There\'s nothing to reset...', player)
 
     async def show_bet_quota(self, player, data, **kwargs):
         # Outputs the current payout quotas for each team
