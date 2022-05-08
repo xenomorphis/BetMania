@@ -119,7 +119,7 @@ class BetMania(AppConfig):
                                 '$s$FFF//Bet$1EFMania$FFF: Congrats! Team $00F{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
                                 .format(data.team, str(payout)), supporter)
                             # the following should evoke the /pay <supporter> <amount> command
-                            await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
+                            await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
                     else:
                         for supporter in self.supporters_red:
                             payout = round(self.supporters_red[supporter] * quota_red)
@@ -128,7 +128,7 @@ class BetMania(AppConfig):
                                 '$s$FFF//Bet$1EFMania$FFF: Congrats! Team $F00{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
                                 .format(data.team, str(payout)), supporter)
                             # the following should evoke the /pay <supporter> <amount> command
-                            await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
+                            await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
 
                 else:
                     await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Total stake is zero, no payout this time!')
@@ -151,11 +151,11 @@ class BetMania(AppConfig):
 
             for supporter in self.supporters_blue:
                 payout = self.supporters_blue[supporter]
-                await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
+                await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
 
             for supporter in self.supporters_red:
                 payout = self.supporters_red[supporter]
-                await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
+                await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
 
             self.stack_red = 0
             self.stack_blue = 0
