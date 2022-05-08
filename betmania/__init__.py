@@ -1,5 +1,3 @@
-# Prototype for a PyPlanet Betting Plugin
-
 from pyplanet.apps.config import AppConfig
 from pyplanet.contrib.command import Command
 
@@ -49,7 +47,7 @@ class BetMania(AppConfig):
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
         )
 
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.10 $FFF(Subsystem v1) online')
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.11 $FFF(Subsystem v1) online')
 
     async def open_bet(self, player, data, **kwargs):
         if not self.bet_current:
@@ -80,7 +78,7 @@ class BetMania(AppConfig):
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: We don\'t have an active bet at the moment.', player)
 
     async def resolve_bet(self, player, data, **kwargs):
-        # Needs testing
+        # Works until line 90 - still needs testing
         # Sets bet to closed and immediately resolves it
         if self.bet_current:
             self.bet_open = False
@@ -121,7 +119,7 @@ class BetMania(AppConfig):
                                 '$s$FFF//Bet$1EFMania$FFF: Congrats! Team $00F{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
                                 .format(data.team, str(payout)), supporter)
                             # the following should evoke the /pay <supporter> <amount> command
-                            await self.instance.command_manager.execute(player, '/payout', supporter, payout)
+                            await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
                     else:
                         for supporter in self.supporters_red:
                             payout = round(self.supporters_red[supporter] * quota_red)
@@ -130,7 +128,7 @@ class BetMania(AppConfig):
                                 '$s$FFF//Bet$1EFMania$FFF: Congrats! Team $F00{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
                                 .format(data.team, str(payout)), supporter)
                             # the following should evoke the /pay <supporter> <amount> command
-                            await self.instance.command_manager.execute(player, '/payout', supporter, payout)
+                            await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
 
                 else:
                     await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Total stake is zero, no payout this time!')
@@ -145,7 +143,7 @@ class BetMania(AppConfig):
                                      player)
 
     async def reset_bet(self, player, data, **kwargs):
-        # Works so far, but couldn't test the for-loops
+        # Works so far, but for-loop doesn't do the payout
         # Resets a bet and returns all bets to the respective players
         if self.bet_current:
             self.bet_open = False
@@ -153,11 +151,11 @@ class BetMania(AppConfig):
 
             for supporter in self.supporters_blue:
                 payout = self.supporters_blue[supporter]
-                await self.instance.command_manager.execute(player, '/payout', supporter, payout)
+                await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
 
             for supporter in self.supporters_red:
                 payout = self.supporters_red[supporter]
-                await self.instance.command_manager.execute(player, '/payout', supporter, payout)
+                await self.instance.command_manager.execute(player, '/payout', supporter, str(payout))
 
             self.stack_red = 0
             self.stack_blue = 0
@@ -189,7 +187,7 @@ class BetMania(AppConfig):
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: We don\'t have an active bet at the moment.', player)
 
     async def place_bet(self, player, data, **kwargs):
-        # All else-branches working, rest is broken
+        # Should work now
         # Checks first if bet is open. Allows player to bet planets via donating them (works the same way)
         if self.bet_open:
             if data.team in self.teams:
@@ -197,17 +195,21 @@ class BetMania(AppConfig):
                 # data.team contains the team the bet is meant for (as provided by /bet <amount> <team>)
 
                 # the following should evoke the /payin <amount> command
-                await self.instance.command_manager.execute(player, '/payin', data.amount)
+                await self.instance.command_manager.execute(player, '/payin', str(data.amount))
                 await self.instance.chat(
                     '$s$FFF//Bet$1EFMania$FFF: {} $FFFhas placed a bet of $s$FE1{} $FFFplanets on team {}.'
                     .format(player.nickname, str(data.amount), data.team))
 
                 if data.team == 'blue':
+                    self.stack_blue += data.amount
+
                     if player.login in self.supporters_blue:
                         self.supporters_blue[player.login] += data.amount
                     else:
                         self.supporters_blue[player.login] = data.amount
                 else:
+                    self.stack_red += data.amount
+
                     if player.login in self.supporters_red:
                         self.supporters_red[player.login] += data.amount
                     else:
@@ -223,7 +225,7 @@ class BetMania(AppConfig):
                 player)
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.10 $FFF(Subsystem v1)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.11 $FFF(Subsystem v1)', player)
 
     async def debug(self, player, data, **kwargs):
         await self.instance.chat('$FFFbet_open: $000{} $FFF// bet_current: $000{} $FFF// stack_red: $F00{} $FFF// stack_blue: $00F{}'
