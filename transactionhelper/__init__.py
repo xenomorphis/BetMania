@@ -76,9 +76,8 @@ class TransactionHelper(AppConfig):
 
             if state == 4:
                 if current_bill['amount'] > 0:
-                    message = '$f0fPayment of $fff{}$f0f planets from $fff{}$f0f confirmed!'.format(
-                        current_bill['amount'], current_bill['player'].nickname)
-                    await self.instance.chat(message, current_bill['admin'].login)
+                    message = '$f0fPayment of $fff{}$f0f planets confirmed!'.format(current_bill['amount'])
+                    await self.instance.chat(message, current_bill['player'].login)
                 else:
                     message = '$f0fPayment of $fff{}$f0f planets to $fff{}$f0f confirmed!'.format(
                         -current_bill['amount'], current_bill['player'])
