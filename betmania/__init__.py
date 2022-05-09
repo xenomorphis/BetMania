@@ -1,5 +1,8 @@
+import asyncio
+
 from pyplanet.apps.config import AppConfig
 from pyplanet.contrib.command import Command
+from pyplanet.apps.core.maniaplanet import callbacks as mp_signals
 
 
 class BetMania(AppConfig):
@@ -14,11 +17,15 @@ class BetMania(AppConfig):
         # Init vars
         self.bet_open = False
         self.bet_current = False
+        self.bets = dict()
         self.stack_red = 0
         self.stack_blue = 0
         self.supporters_red = dict()
         self.supporters_blue = dict()
         self.teams = ['blue', 'red']   # TODO: Fill list with items from the current configuration
+        self.waiting = dict()
+
+        self.lock = asyncio.Lock()
 
     async def on_start(self):
         # Sets command permissions
@@ -47,7 +54,10 @@ class BetMania(AppConfig):
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
         )
 
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.11 $FFF(Subsystem v1) online')
+        # Register callback.
+        self.context.signals.listen(mp_signals.other.bill_updated, self.receive_bet)
+
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.12 $FFF(Subsystem v1) online')
 
     async def open_bet(self, player, data, **kwargs):
         if not self.bet_current:
@@ -55,10 +65,12 @@ class BetMania(AppConfig):
             # Initializes vars and sets bet to open (it's more or less an init-function)
             self.bet_open = True
             self.bet_current = True
+            self.bets.clear()
             self.stack_red = 0
             self.stack_blue = 0
             self.supporters_red.clear()
             self.supporters_blue.clear()
+            self.waiting.clear()
 
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET IS NOW OPEN! //')
             await self.instance.chat(
@@ -118,7 +130,6 @@ class BetMania(AppConfig):
                             await self.instance.chat(
                                 '$s$FFF//Bet$1EFMania$FFF: Congrats! Team $00F{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
                                 .format(data.team, str(payout)), supporter)
-                            # the following should evoke the /pay <supporter> <amount> command
                             await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
                     else:
                         for supporter in self.supporters_red:
@@ -127,7 +138,6 @@ class BetMania(AppConfig):
                             await self.instance.chat(
                                 '$s$FFF//Bet$1EFMania$FFF: Congrats! Team $F00{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
                                 .format(data.team, str(payout)), supporter)
-                            # the following should evoke the /pay <supporter> <amount> command
                             await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
 
                 else:
@@ -148,6 +158,7 @@ class BetMania(AppConfig):
         if self.bet_current:
             self.bet_open = False
             self.bet_current = False
+            self.bets.clear()
 
             for supporter in self.supporters_blue:
                 payout = self.supporters_blue[supporter]
@@ -198,25 +209,10 @@ class BetMania(AppConfig):
 
                 # the following should evoke the /payin <amount> command
                 await self.instance.command_manager.execute(player, '/payin', str(data.amount))
-                await self.instance.chat(
-                    '$s$FFF//Bet$1EFMania$FFF: {} $FFFhas placed a bet of $s$FE1{} $FFFplanets on team {}.'
-                    .format(player.nickname, str(data.amount), data.team))
 
-                if data.team == 'blue':
-                    self.stack_blue += data.amount
-
-                    if player.login in self.supporters_blue:
-                        self.supporters_blue[player.login] += data.amount
-                    else:
-                        self.supporters_blue[player.login] = data.amount
-                else:
-                    self.stack_red += data.amount
-
-                    if player.login in self.supporters_red:
-                        self.supporters_red[player.login] += data.amount
-                    else:
-                        self.supporters_red[player.login] = data.amount
-
+                self.waiting['player'] = player
+                self.waiting['amount'] = data.amount
+                self.waiting['team'] = data.team
             else:
                 await self.instance.chat(
                     '$s$FFF//Bet$1EFMania$FFF: Please specify the team you want to place your bet on. Allowed arguments are \'blue\' and \'red\'',
@@ -226,8 +222,47 @@ class BetMania(AppConfig):
                 '$s$FFF//Bet$1EFMania$FFF: There\'s no open bet at the moment. Please try again later (or ask an ServerOp to open one ;)',
                 player)
 
+    async def receive_bet(self, bill_id, state, state_name, transaction_id, **kwargs):
+        # Callback method when bill_updated signal is received. Ensures that the BetMania vars are only updated if a payment has occured
+        if (len(self.waiting) > 0) or (bill_id in self.bets):
+            if bill_id not in self.bets:
+                self.bets[bill_id] = {
+                    'player': self.waiting['player'],
+                    'amount': self.waiting['amount'],
+                    'team' : self.waiting['team']
+                }
+
+                self.waiting.clear()
+
+            async with self.lock:
+                if state == 4:
+                    await self.instance.chat(
+                        '$s$FFF//Bet$1EFMania$FFF: {} $FFFhas placed a bet of $s$FE1{} $FFFplanets on team {}.'
+                            .format(self.bets[bill_id]['player'].nickname, str(self.bets[bill_id]['amount']), self.bets[bill_id]['team']))
+
+                    if self.bets[bill_id]['team'] == 'blue':
+                        self.stack_blue += self.bets[bill_id]['amount']
+
+                        if self.bets[bill_id]['player'].login in self.supporters_blue:
+                            self.supporters_blue[self.bets[bill_id]['player'].login] += self.bets[bill_id]['amount']
+                        else:
+                            self.supporters_blue[self.bets[bill_id]['player'].login] = self.bets[bill_id]['amount']
+                    else:
+                        self.stack_red += self.bets[bill_id]['amount']
+
+                        if self.bets[bill_id]['player'].login in self.supporters_red:
+                            self.supporters_red[self.bets[bill_id]['player'].login] += self.bets[bill_id]['amount']
+                        else:
+                            self.supporters_red[self.bets[bill_id]['player'].login] = self.bets[bill_id]['amount']
+
+                    del self.bets[bill_id]
+                elif state > 4:
+                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Transaction failed! No bet was placed!',
+                                             self.bets[bill_id]['player'])
+                    del self.bets[bill_id]
+
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.11 $FFF(Subsystem v1)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.1.12 $FFF(Subsystem v1)', player)
 
     async def debug(self, player, data, **kwargs):
         await self.instance.chat('$FFFbet_open: $000{} $FFF// bet_current: $000{} $FFF// stack_red: $F00{} $FFF// stack_blue: $00F{}'
@@ -235,3 +270,4 @@ class BetMania(AppConfig):
                                  player)
         await self.instance.chat('$FFFEntries in supporters_red: $F00{} $FFF// Entries in supporters_blue: $00F{}'
                                  .format(str(len(self.supporters_red)), str(len(self.supporters_blue))), player)
+        await self.instance.chat('$FFFEntries in supporters_red: $F00{}'.format(str(self.supporters_red)), player)
