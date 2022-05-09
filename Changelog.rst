@@ -5,6 +5,9 @@ BetMania
 Changelog
 -----------
 
+``0.1.12``
+    | Update: Adds a payin callback function (triggered after receiving a bet payment)
+
 ``0.1.11``
     | Fix: TypeError when calling ``/payin`` command
 
