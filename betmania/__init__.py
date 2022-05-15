@@ -42,7 +42,7 @@ class BetMania(AppConfig):
                 .add_param(name='team', required=True, type=str, help='Plase specify the winning team (blue / red)'),
             Command(command='resetbet', target=self.reset_bet, perms='betmania:resolve_bet', admin=True,
                     description='Resets an already opened bet. Use only when necessary!'),
-            Command(command='bet', target=self.place_bet, description='Kicks the provided player from the server.')
+            Command(command='bet', target=self.place_bet, description='Places a configurable amount of planets on a bet.')
                 .add_param(name='amount', required=True, type=int, help='Enter here how many planets you want to bet')
                 .add_param(name='team', required=True, type=str, help='Enter the team you want to bet for. You\'ll receive a playout if your specified team wins (blue / red).'),
             Command(command='quota', target=self.show_bet_quota,
@@ -59,11 +59,10 @@ class BetMania(AppConfig):
         # Register callback.
         self.context.signals.listen(mp_signals.other.bill_updated, self.receive_bet)
 
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.0rc1 $FFF(Subsystem v1) online')
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.0 $FFF(Subsystem v2) online')
 
     async def open_bet(self, player, data, **kwargs):
         if not self.bet_current:
-            # Works as intended
             # Initializes vars and sets bet to open (it's more or less an init-function)
             self.bet_open = True
             self.bet_current = True
@@ -84,7 +83,6 @@ class BetMania(AppConfig):
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET HAS BEEN REOPENED! //')
 
     async def close_bet(self, player, data, **kwargs):
-        # Works as intended
         # Sets bet to closed without resolving it
         if self.bet_open:
             self.bet_open = False
@@ -93,7 +91,6 @@ class BetMania(AppConfig):
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: We don\'t have an active bet at the moment.', player)
 
     async def resolve_bet(self, player, data, **kwargs):
-        # Works until line 90 - still needs testing
         # Sets bet to closed and immediately resolves it
         if self.bet_current:
             self.bet_open = False
@@ -137,7 +134,6 @@ class BetMania(AppConfig):
                                      player)
 
     async def reset_bet(self, player, data, **kwargs):
-        # Works so far, but for-loop doesn't do the payout
         # Resets a bet and returns all bets to the respective players
         if self.bet_current:
             self.bet_open = False
@@ -173,19 +169,14 @@ class BetMania(AppConfig):
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: We don\'t have an active bet at the moment.', player)
 
     async def place_bet(self, player, data, **kwargs):
-        # Should work now
         # Checks first if bet is open. Allows player to bet planets via donating them (works the same way)
         if self.bet_open:
             if data.team in self.teams:
-                # data.amount contains the amount of planets placed as a bet (as provided by /bet <amount> <team>)
-                # data.team contains the team the bet is meant for (as provided by /bet <amount> <team>)
-
-                # the following should evoke the /payin <amount> command
-                await self.instance.command_manager.execute(player, '/payin', str(data.amount))
-
                 self.waiting['player'] = player
                 self.waiting['amount'] = data.amount
                 self.waiting['team'] = data.team
+
+                await self.instance.command_manager.execute(player, '/payin', str(data.amount))
             else:
                 await self.instance.chat(
                     '$s$FFF//Bet$1EFMania$FFF: Please specify the team you want to place your bet on. Allowed arguments are \'blue\' and \'red\'',
@@ -222,12 +213,24 @@ class BetMania(AppConfig):
 
                     del self.bets[bill_id]
                 elif state > 4:
-                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Transaction failed! No bet was placed!',
+                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Transaction refused or failed! No bet was placed!',
                                              self.bets[bill_id]['player'])
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.0rc1 $FFF(Subsystem v1)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.0 $FFF(Subsystem v2)', player)
+
+        if player.level == 0:
+            await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.', player)
+            await self.instance.chat('$s$1EF/quota$FFF: $iShows the current payout quotas for each possible result.', player)
+
+        if player.level > 0:
+            await self.instance.chat('$s$1EF//openbet$FFF: $iOpens up a new bet or reopens a closed one.', player)
+            await self.instance.chat('$s$1EF//closebet$FFF: $iCloses an existing bet for new entries.', player)
+
+        if player.level == 3:
+            await self.instance.chat('$s$1EF//resolvebet$FFF: $iCloses and resolves an open bet.', player)
+            await self.instance.chat('$s$1EF//resetbet$FFF: $iResets an open bet. Players get their payins refunded.', player)
 
     def calc_stake(self):
         stake = 0
