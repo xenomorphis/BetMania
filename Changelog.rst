@@ -5,6 +5,11 @@ BetMania
 Changelog
 -----------
 
+``0.2.0``
+    | Feature: Replaces hard coded team-specific variables with dynamically created dictionaries for each configured team
+    | Update: Removes transactionhelpers bill_updated callback function
+    | Update: Adds a small explanation for all available commands to ``/betmania``
+
 ``0.1.12``
     | Update: Adds a payin callback function (triggered after receiving a bet payment)
 
