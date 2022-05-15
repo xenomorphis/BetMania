@@ -2,10 +2,11 @@
 BetMania
 ========
 :Developer: apex/xenomorphis
-:Version: 0.1.12 (subsystem 1)
+:Version: 0.2.0 (subsystem 2)
 
 BetMania is a plugin for `PyPlanet <https://pypla.net/en/latest/index.html>`_ and provides an ingame betting system
-for Trackmania. It is currently in an early alpha-stage and not ready to be used on non-testing environments yet.
+for Trackmania. Since version 0.2.0 the codebase in the ``master``-branch can be considered 'stable'. Don't consider
+a copy of the master-branch to be an official release however - there may still be some WIP going on.
 
 
 Basic Usage
@@ -70,7 +71,7 @@ transactionhelper
     transaction-related and provides the corresponding commands used by ``betmania`` itself. This additional
     *abstraction layer* allowed me to focus entirely on the development of the main module since I didn't need to
     worry about the details of how transaction handling works in PyPlanet. This module will possibly be obsolete in the
-    future.
+    near future.
 
 
 Roadmap
