@@ -2,6 +2,7 @@ import asyncio
 
 from pyplanet.apps.config import AppConfig
 from pyplanet.contrib.command import Command
+from pyplanet.contrib.setting import Setting
 from pyplanet.apps.core.maniaplanet import callbacks as mp_signals
 
 
@@ -18,12 +19,37 @@ class BetMania(AppConfig):
         self.bet_open = False
         self.bet_current = False
         self.bets = dict()
+        self.reconfigure = False
         self.stack = dict()
         self.supporters = dict()
         self.teams = ['blue', 'red']   # TODO: Fill list with items from the current configuration
         self.waiting = dict()
 
         self.lock = asyncio.Lock()
+
+        self.setting_bet_config_teams = Setting(
+            'bet_config_teams', 'Configure the available betting targets (teams)', Setting.CAT_BEHAVIOUR, type=str,
+            description='Configure the available betting targets (teams).',
+            default='blue,red', change_target=self.reconfigure_teams
+        )
+
+        self.setting_bet_margin = Setting(
+            'bet_margin', 'Sets the margin for all bets.', Setting.CAT_BEHAVIOUR, type=int,
+            description='Defines the amount of planets deducted as transaction fees from the total stake before a bet payout. Use values between 1 and 100 if bet_margin_relative is activated.',
+            default=0,
+        )
+
+        self.setting_bet_margin_relative = Setting(
+            'bet_margin_relative', 'Use bet_margin as a relative amount', Setting.CAT_BEHAVIOUR, type=bool,
+            description='If activated, bet_margin is handled as a relative amount (xx % of the stake). By default bet_margin will be used as an absolute amount (xxx planets).',
+            default=False,
+        )
+
+        self.setting_show_widget = Setting(
+            'bet_show_widget', 'Shows / Hides the BetMania widget', Setting.CAT_BEHAVIOUR, type=bool,
+            description='Shows / Hides the BetMania widget (currently not used).',
+            default=False, change_target=self.toggle_widget
+        )
 
     async def on_start(self):
         # Sets command permissions
@@ -52,6 +78,8 @@ class BetMania(AppConfig):
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
         )
 
+        await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_margin, self.setting_bet_margin_relative, self.setting_show_widget)
+
         for team in self.teams:
             self.supporters[team] = dict()
             self.stack[team] = 0
@@ -59,7 +87,7 @@ class BetMania(AppConfig):
         # Register callback.
         self.context.signals.listen(mp_signals.other.bill_updated, self.receive_bet)
 
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.0 $FFF(Subsystem v2) online')
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.1 $FFF(Subsystem v2) online')
 
     async def open_bet(self, player, data, **kwargs):
         if not self.bet_current:
@@ -68,9 +96,18 @@ class BetMania(AppConfig):
             self.bet_current = True
             self.bets.clear()
 
-            for team in self.teams:
-                self.supporters[team].clear()
-                self.stack[team] = 0
+            if self.reconfigure:
+                self.reconfigure = False
+                new_config = await self.setting_bet_config_teams.get_value()
+                self.teams = new_config.split(',')
+
+                for team in self.teams:
+                    self.supporters[team] = dict()
+                    self.stack[team] = 0
+            else:
+                for team in self.teams:
+                    self.supporters[team].clear()
+                    self.stack[team] = 0
 
             self.waiting.clear()
 
@@ -218,7 +255,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.0 $FFF(Subsystem v2)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.1 $FFF(Subsystem v2)', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.', player)
         await self.instance.chat('$s$1EF/quota$FFF: $iShows the current payout quotas for each possible result.', player)
@@ -230,6 +267,20 @@ class BetMania(AppConfig):
         if player.level == 3:
             await self.instance.chat('$s$1EF//resolvebet$FFF: $iCloses and resolves an open bet.', player)
             await self.instance.chat('$s$1EF//resetbet$FFF: $iResets an open bet. Players get their payins refunded.', player)
+
+    async def reconfigure_teams(self, *args, **kwargs):
+        if self.bet_current:
+            self.reconfigure = True
+        else:
+            new_config = await self.setting_bet_config_teams.get_value()
+            self.teams = new_config.split(',')
+
+            for team in self.teams:
+                self.supporters[team] = dict()
+                self.stack[team] = 0
+
+    async def toggle_widget(self, *args, **kwargs):
+        await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: UI will be added in a future version.', player)
 
     def calc_stake(self):
         stake = 0
