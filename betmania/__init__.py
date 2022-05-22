@@ -22,7 +22,7 @@ class BetMania(AppConfig):
         self.reconfigure = False
         self.stack = dict()
         self.supporters = dict()
-        self.teams = ['blue', 'red']   # TODO: Fill list with items from the current configuration
+        self.teams = ['blue', 'red']
         self.waiting = dict()
 
         self.lock = asyncio.Lock()
@@ -34,7 +34,7 @@ class BetMania(AppConfig):
         )
 
         self.setting_bet_margin = Setting(
-            'bet_margin', 'Sets the margin for all bets.', Setting.CAT_BEHAVIOUR, type=int,
+            'bet_margin', 'Sets the server margin for all bets.', Setting.CAT_BEHAVIOUR, type=int,
             description='Defines the amount of planets deducted as transaction fees from the total stake before a bet payout. Use values between 1 and 100 if bet_margin_relative is activated.',
             default=0,
         )
@@ -280,7 +280,7 @@ class BetMania(AppConfig):
                 self.stack[team] = 0
 
     async def toggle_widget(self, *args, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: UI will be added in a future version.', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: UI will be added in a future version.')
 
     def calc_stake(self):
         stake = 0
