@@ -288,6 +288,14 @@ class BetMania(AppConfig):
         for team in self.teams:
             stake += self.stack[team]
 
+        deduct_amount = self.setting_bet_margin.get_value()
+        deduct_rel = self.setting_bet_margin_relative.get_value()
+
+        if deduct_rel:
+            stake -= abs(deduct_amount)*(stake/100)
+        else:
+            stake -= abs(deduct_amount)
+
         return stake
 
     async def debug(self, player, data, **kwargs):
