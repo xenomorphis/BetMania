@@ -292,6 +292,9 @@ class BetMania(AppConfig):
         deduct_rel = self.setting_bet_margin_relative.get_value()
 
         if deduct_rel:
+            if abs(deduct_amount) > 100:
+                deduct_amount %= 100
+
             stake -= abs(deduct_amount)*(stake/100)
         else:
             stake -= abs(deduct_amount)
