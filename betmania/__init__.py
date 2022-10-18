@@ -65,12 +65,14 @@ class BetMania(AppConfig):
                     description='Closes an open bet and prevents players from placing new bets.'),
             Command(command='resolvebet', aliases=['resolve'], target=self.resolve_bet, perms='betmania:resolve_bet',
                     admin=True, description='Closes and resolves a bet.')
-                .add_param(name='team', required=True, type=str, help='Plase specify the winning team (blue / red)'),
+            .add_param(name='team', required=True, type=str, help='Plase specify the winning team (blue / red)'),
             Command(command='resetbet', target=self.reset_bet, perms='betmania:resolve_bet', admin=True,
                     description='Resets an already opened bet. Use only when necessary!'),
-            Command(command='bet', target=self.place_bet, description='Places a configurable amount of planets on a bet.')
-                .add_param(name='amount', required=True, type=int, help='Enter here how many planets you want to bet')
-                .add_param(name='team', required=True, type=str, help='Enter the team you want to bet for. You\'ll receive a playout if your specified team wins (blue / red).'),
+            Command(command='bet', target=self.place_bet,
+                    description='Places a configurable amount of planets on a bet.')
+            .add_param(name='amount', required=True, type=int, help='Enter here how many planets you want to bet')
+            .add_param(name='team', required=True, type=str,
+                       help='Enter the team you want to bet for. You\'ll receive a playout if your specified team wins (blue / red).'),
             Command(command='quota', target=self.show_bet_quota,
                     description='Returns the current payout quotas for both teams.'),
             Command(command='bmdebug', target=self.debug, perms='betmania:resolve_bet', admin=True,
@@ -78,7 +80,8 @@ class BetMania(AppConfig):
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
         )
 
-        await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_margin, self.setting_bet_margin_relative, self.setting_show_widget)
+        await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_margin,
+                                            self.setting_bet_margin_relative, self.setting_show_widget)
 
         for team in self.teams:
             self.supporters[team] = dict()
@@ -115,7 +118,8 @@ class BetMania(AppConfig):
             await self.instance.chat(
                 'A bet has been opened. Place your stakes now with \'/bet XXX red\' or \'/bet XXX blue\'. Good luck!')
         else:
-            await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Reivously unresolved bet found. I\'ll reopen that... //', player)
+            await self.instance.chat(
+                '$s$FFF//Bet$1EFMania$FFF: Reivously unresolved bet found. I\'ll reopen that... //', player)
             self.bet_open = True
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET HAS BEEN REOPENED! //')
 
@@ -148,14 +152,14 @@ class BetMania(AppConfig):
 
                     await self.instance.chat(
                         '$s$FFF//Bet$1EFMania$FFF: Team {}{} $FFFhas won the tournament. Quota was {}.'
-                            .format(str_team_format[data.team], data.team, str(quota)))
+                        .format(str_team_format[data.team], data.team, str(quota)))
 
                     for supporter in self.supporters[data.team]:
                         payout = round(self.supporters[data.team][supporter] * quota)
 
                         await self.instance.chat(
                             '$s$FFF//Bet$1EFMania$FFF: Congrats! Team {}{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
-                                .format(str_team_format[data.team], data.team, str(payout)), supporter)
+                            .format(str_team_format[data.team], data.team, str(payout)), supporter)
                         await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
 
                 else:
@@ -167,8 +171,9 @@ class BetMania(AppConfig):
                     '$s$FFF//Bet$1EFMania$FFF: Please specify the winning team. Allowed arguments are \'blue\' and \'red\'',
                     player)
         else:
-            await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: There\'s no available bet at the moment that could be resolved.',
-                                     player)
+            await self.instance.chat(
+                '$s$FFF//Bet$1EFMania$FFF: There\'s no available bet at the moment that could be resolved.',
+                player)
 
     async def reset_bet(self, player, data, **kwargs):
         # Resets a bet and returns all bets to the respective players
@@ -239,7 +244,8 @@ class BetMania(AppConfig):
                 if state == 4:
                     await self.instance.chat(
                         '$s$FFF//Bet$1EFMania$FFF: {} $FFFhas placed a bet of $s$FE1{} $FFFplanets on team {}.'
-                            .format(self.bets[bill_id]['player'].nickname, str(self.bets[bill_id]['amount']), self.bets[bill_id]['team']))
+                        .format(self.bets[bill_id]['player'].nickname, str(self.bets[bill_id]['amount']),
+                                self.bets[bill_id]['team']))
 
                     self.stack[self.bets[bill_id]['team']] += self.bets[bill_id]['amount']
 
@@ -250,15 +256,18 @@ class BetMania(AppConfig):
 
                     del self.bets[bill_id]
                 elif state > 4:
-                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Transaction refused or failed! No bet was placed!',
-                                             self.bets[bill_id]['player'])
+                    await self.instance.chat(
+                        '$s$FFF//Bet$1EFMania$FFF: Transaction refused or failed! No bet was placed!',
+                        self.bets[bill_id]['player'])
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
         await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.1 $FFF(Subsystem v2)', player)
 
-        await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.', player)
-        await self.instance.chat('$s$1EF/quota$FFF: $iShows the current payout quotas for each possible result.', player)
+        await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
+                                 player)
+        await self.instance.chat('$s$1EF/quota$FFF: $iShows the current payout quotas for each possible result.',
+                                 player)
 
         if player.level > 0:
             await self.instance.chat('$s$1EF//openbet$FFF: $iOpens up a new bet or reopens a closed one.', player)
@@ -266,7 +275,8 @@ class BetMania(AppConfig):
 
         if player.level == 3:
             await self.instance.chat('$s$1EF//resolvebet$FFF: $iCloses and resolves an open bet.', player)
-            await self.instance.chat('$s$1EF//resetbet$FFF: $iResets an open bet. Players get their payins refunded.', player)
+            await self.instance.chat('$s$1EF//resetbet$FFF: $iResets an open bet. Players get their payins refunded.',
+                                     player)
 
     async def reconfigure_teams(self, *args, **kwargs):
         if self.bet_current:
@@ -295,16 +305,17 @@ class BetMania(AppConfig):
             if abs(deduct_amount) > 100:
                 deduct_amount %= 100
 
-            stake -= abs(deduct_amount)*(stake/100)
+            stake -= abs(deduct_amount) * (stake / 100)
         else:
             stake -= abs(deduct_amount)
 
         return stake
 
     async def debug(self, player, data, **kwargs):
-        await self.instance.chat('$FFFbet_open: $000{} $FFF// bet_current: $000{} $FFF// stack_red: $F00{} $FFF// stack_blue: $00F{}'
-                                 .format(str(self.bet_open), str(self.bet_current), str(self.stack['red']), str(self.stack['blue'])),
-                                 player)
+        await self.instance.chat(
+            '$FFFbet_open: $000{} $FFF// bet_current: $000{} $FFF// stack_red: $F00{} $FFF// stack_blue: $00F{}'
+            .format(str(self.bet_open), str(self.bet_current), str(self.stack['red']), str(self.stack['blue'])),
+            player)
         await self.instance.chat('$FFFEntries in supporters_red: $F00{} $FFF// Entries in supporters_blue: $00F{}'
                                  .format(str(len(self.supporters['red'])), str(len(self.supporters['blue']))), player)
         await self.instance.chat('$FFFEntries in supporters_red: $F00{}'.format(str(self.supporters['red'])), player)
