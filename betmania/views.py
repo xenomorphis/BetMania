@@ -8,7 +8,7 @@ class SupportersListView(ManualListView):
 
     title = ''
     icon_style = 'Icons128x128_1'
-    icon_substyle = 'Browse'
+    icon_substyle = 'Statistics'
     team = ''
 
     data = []
@@ -35,7 +35,7 @@ class SupportersListView(ManualListView):
                 'index': 'bet_amount',
                 'sorting': True,
                 'searching': False,
-                'width': 45
+                'width': 50
             }
         ]
 
