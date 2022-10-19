@@ -24,7 +24,8 @@ class BetMania(AppConfig):
         self.reconfigure = False
         self.stack = dict()
         self.supporters = dict()
-        self.teams = ['blue', 'red']
+        self.teams = list()
+        self.team_colors = dict()
         self.waiting = dict()
 
         self.lock = asyncio.Lock()
@@ -33,6 +34,12 @@ class BetMania(AppConfig):
             'bet_config_teams', 'Configure the available betting targets (teams)', Setting.CAT_BEHAVIOUR, type=str,
             description='Configure the available betting targets (teams).',
             default='blue,red', change_target=self.reconfigure_teams
+        )
+
+        self.setting_bet_config_team_colors = Setting(
+            'bet_config_team_colors', 'Configure the highlighting colors for each team', Setting.CAT_BEHAVIOUR, type=str,
+            description='Configure the highlighting colors for each team.',
+            default='$s$00F,$s$F00', change_target=self.reconfigure_teams
         )
 
         self.setting_bet_margin = Setting(
@@ -82,12 +89,11 @@ class BetMania(AppConfig):
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
         )
 
-        await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_margin,
-                                            self.setting_bet_margin_relative, self.setting_show_widget)
+        await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_config_team_colors,
+                                            self.setting_bet_margin, self.setting_bet_margin_relative,
+                                            self.setting_show_widget)
 
-        for team in self.teams:
-            self.supporters[team] = dict()
-            self.stack[team] = 0
+        await self.reconfigure_teams()
 
         # Register callback.
         self.context.signals.listen(mp_signals.other.bill_updated, self.receive_bet)
@@ -142,11 +148,6 @@ class BetMania(AppConfig):
                 # data.team contains the winning team as provided by /resolve <team>
                 stake = self.calc_stake()
 
-                str_team_format = {
-                    'red': '$s$F00',
-                    'blue': '$s$00F'
-                }
-
                 if self.stack[data.team] > 0:
                     quota = round(stake / self.stack[data.team], 3)
 
@@ -154,14 +155,14 @@ class BetMania(AppConfig):
 
                     await self.instance.chat(
                         '$s$FFF//Bet$1EFMania$FFF: Team {}{} $FFFhas won the tournament. Quota was {}.'
-                        .format(str_team_format[data.team], data.team, str(quota)))
+                        .format(self.team_colors[data.team], data.team, str(quota)))
 
                     for supporter in self.supporters[data.team]:
                         payout = round(self.supporters[data.team][supporter] * quota)
 
                         await self.instance.chat(
                             '$s$FFF//Bet$1EFMania$FFF: Congrats! Team {}{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
-                            .format(str_team_format[data.team], data.team, str(payout)), supporter)
+                            .format(self.team_colors[data.team], data.team, str(payout)), supporter)
                         await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
 
                 else:
@@ -264,7 +265,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.1 $FFF(Subsystem v2)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.0-0 $FFF(Subsystem v2)', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
@@ -284,12 +285,23 @@ class BetMania(AppConfig):
         if self.bet_current:
             self.reconfigure = True
         else:
-            new_config = await self.setting_bet_config_teams.get_value()
-            self.teams = new_config.split(',')
+            team_config = await self.setting_bet_config_teams.get_value()
+            self.teams = team_config.split(',')
+
+            color_config = await self.setting_bet_config_team_colors.get_value()
+            colors = color_config.split(',')
+
+            iteration = 0
 
             for team in self.teams:
+                if iteration < len(colors):
+                    self.team_colors[team] = colors[iteration]
+                else:
+                    self.team_colors[team] = '$s$DDD'
+
                 self.supporters[team] = dict()
                 self.stack[team] = 0
+                iteration += 1
 
     async def toggle_widget(self, *args, **kwargs):
         await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: UI will be added in a future version.')
