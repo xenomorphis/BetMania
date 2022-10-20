@@ -84,6 +84,9 @@ class BetMania(AppConfig):
                        help='Enter the team you want to bet for. You\'ll receive a playout if your specified team wins (blue / red).'),
             Command(command='quota', target=self.show_bet_quota,
                     description='Returns the current payout quotas for both teams.'),
+            Command(command='supporters', target=self.show_supporters,
+                    description='Shows a list of all current supporters of a specified team.')
+            .add_param(name='team', required=True, type=str, help='Enter which teams supporters you want to see.'),
             Command(command='bmdebug', target=self.debug, perms='betmania:resolve_bet', admin=True,
                     description='For development purposes.'),
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
@@ -212,6 +215,18 @@ class BetMania(AppConfig):
 
         else:
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: We don\'t have an active bet at the moment.', player)
+
+    async def show_supporters(self, player, data, **kwargs):
+        if data.team in self.teams:
+            if self.stack[data.team] > 0:
+                view = SupportersListView(self, data.team)
+                await view.display(player.login)
+            else:
+                await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Team {}{} $FFFhas  currently no supporters :('
+                                         .format(self.team_colors[data.team], data.team), player)
+
+        else:
+            await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: There\'s no $CCC{} $FFFteam.'.format(data.team), player)
 
     async def place_bet(self, player, data, **kwargs):
         # Checks first if bet is open. Allows player to bet planets via donating them (works the same way)
