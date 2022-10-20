@@ -21,6 +21,7 @@ class BetMania(AppConfig):
         self.bet_open = False
         self.bet_current = False
         self.bets = dict()
+        self.min_bet = 1
         self.reconfigure = False
         self.stack = dict()
         self.supporters = dict()
@@ -52,6 +53,12 @@ class BetMania(AppConfig):
             'bet_margin_relative', 'Use bet_margin as a relative amount', Setting.CAT_BEHAVIOUR, type=bool,
             description='If activated, bet_margin is handled as a relative amount (xx % of the stake). By default bet_margin will be used as an absolute amount (xxx planets).',
             default=False,
+        )
+
+        self.setting_bet_minimum_stake = Setting(
+            'bet_minimum_stake', 'Sets the minimum amount of planets needed for placing a bet.', Setting.CAT_BEHAVIOUR,
+            type=int, description='Defines the minimum amount of planets needed for placing a bet. A value of 1 accepts all stakes.',
+            default=1,
         )
 
         self.setting_show_widget = Setting(
@@ -94,7 +101,7 @@ class BetMania(AppConfig):
 
         await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_config_team_colors,
                                             self.setting_bet_margin, self.setting_bet_margin_relative,
-                                            self.setting_show_widget)
+                                            self.setting_bet_minimum_stake, self.setting_show_widget)
 
         await self.reconfigure_teams()
 
@@ -109,6 +116,7 @@ class BetMania(AppConfig):
             self.bet_open = True
             self.bet_current = True
             self.bets.clear()
+            self.min_bet = await self.setting_bet_minimum_stake.get_value()
 
             if self.reconfigure:
                 self.reconfigure = False
@@ -127,7 +135,9 @@ class BetMania(AppConfig):
 
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET IS NOW OPEN! //')
             await self.instance.chat(
-                'A bet has been opened. Place your stakes now with \'/bet XXX red\' or \'/bet XXX blue\'. Good luck!')
+                '$FFFA bet has been opened. Place your stakes now with \'/bet XXX red\' or \'/bet XXX blue\'. '
+                'Minimum stake for this bet is $1EF{} $FFFplanets. Good luck!'.format(self.min_bet))
+
         else:
             await self.instance.chat(
                 '$s$FFF//Bet$1EFMania$FFF: Reivously unresolved bet found. I\'ll reopen that... //', player)
@@ -236,7 +246,13 @@ class BetMania(AppConfig):
                 self.waiting['amount'] = data.amount
                 self.waiting['team'] = data.team
 
-                await self.instance.command_manager.execute(player, '/payin', str(data.amount))
+                if data.amount >= self.min_bet:
+                    await self.instance.command_manager.execute(player, '/payin', str(data.amount))
+                else:
+                    await self.instance.chat(
+                        '$s$FFF//Bet$1EFMania$FFF: Your stake is not high enough. Current minimum stake is {} planets.'
+                        .format(self.min_bet), player)
+
             else:
                 await self.instance.chat(
                     '$s$FFF//Bet$1EFMania$FFF: Please specify the team you want to place your bet on. Allowed arguments are \'blue\' and \'red\'',
