@@ -247,7 +247,21 @@ class BetMania(AppConfig):
                 self.waiting['team'] = data.team
 
                 if data.amount >= self.min_bet:
-                    await self.instance.command_manager.execute(player, '/payin', str(data.amount))
+                    bet_allowed = True
+
+                    for team in self.teams:
+                        if team == data.team:
+                            continue
+
+                        if player.login in self.supporters[team]:
+                            bet_allowed = False
+                            await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: You have already supported a team, '
+                                                     'thus you can\'t support a second one. Bet rejected.', player)
+                            break
+
+                    if bet_allowed:
+                        await self.instance.command_manager.execute(player, '/payin', str(data.amount))
+
                 else:
                     await self.instance.chat(
                         '$s$FFF//Bet$1EFMania$FFF: Your stake is not high enough. Current minimum stake is {} planets.'
