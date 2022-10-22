@@ -5,6 +5,14 @@ BetMania
 Changelog
 -----------
 
+``0.3.1``
+    | Feature: Migrates ``/payin`` functionality from TransactionHelper to BetMania
+    | Feature: Adds a first draft for the apps main UI
+    | Update: Checks if a player has already placed a bet on another team before allowing the player to place a new bet
+    | Update: Adds a possibility to configure a minimum amount of planets needed for placing a bet
+    | Update: Adds 'supporters' command (displays a list of all supporters of a specific team)
+    | Update: Adds a new setting used for storing team colors
+
 ``0.2.0``
     | Feature: Replaces hard coded team-specific variables with dynamically created dictionaries for each configured team
     | Update: Removes transactionhelpers bill_updated callback function

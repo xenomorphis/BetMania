@@ -1,8 +1,8 @@
 ========
 BetMania
 ========
-:Developer: apex/xenomorphis
-:Version: 0.2.0 (subsystem 2)
+:Release: 2022-10-23
+:Version: 0.3.1 (subsystem 3)
 
 BetMania is a plugin for `PyPlanet <https://pypla.net/en/latest/index.html>`_ and provides an ingame betting system
 for Trackmania. Since version 0.2.0 the codebase in the ``master``-branch can be considered 'stable'. Don't consider
@@ -48,6 +48,10 @@ the commands are well hidden behind stylish little buttons.
 ``/bet <amount> <team>``
     | *No permissions needed*
     | Places the specified **amount** as a bet on the specified **team**.
+
+``/supporters <team>``
+    | *No permissions needed*
+    | Shows a list containing all players which have placed stakes on a specific **team**.
 
 ``/quota``
     | *No permissions needed*
