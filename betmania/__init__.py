@@ -46,19 +46,22 @@ class BetMania(AppConfig):
 
         self.setting_bet_margin = Setting(
             'bet_margin', 'Sets the server margin for all bets.', Setting.CAT_BEHAVIOUR, type=int,
-            description='Defines the amount of planets deducted as transaction fees from the total stake before a bet payout. Use values between 1 and 100 if bet_margin_relative is activated.',
+            description='Defines the amount of planets deducted as transaction fees from the total stake before a bet '
+                        'payout. Use values between 1 and 100 if bet_margin_relative is activated.',
             default=0,
         )
 
         self.setting_bet_margin_relative = Setting(
             'bet_margin_relative', 'Use bet_margin as a relative amount', Setting.CAT_BEHAVIOUR, type=bool,
-            description='If activated, bet_margin is handled as a relative amount (xx % of the stake). By default bet_margin will be used as an absolute amount (xxx planets).',
+            description='If activated, bet_margin is handled as a relative amount (xx % of the stake). By default bet_'
+                        'margin will be used as an absolute amount (xxx planets).',
             default=False,
         )
 
         self.setting_bet_minimum_stake = Setting(
             'bet_minimum_stake', 'Sets the minimum amount of planets needed for placing a bet.', Setting.CAT_BEHAVIOUR,
-            type=int, description='Defines the minimum amount of planets needed for placing a bet. A value of 1 accepts all stakes.',
+            type=int, description='Defines the minimum amount of planets needed for placing a bet. A value of 1 '
+                                  'accepts all stakes.',
             default=1,
         )
 
@@ -243,10 +246,6 @@ class BetMania(AppConfig):
         # Checks first if bet is open. Allows player to bet planets via donating them (works the same way)
         if self.bet_open:
             if data.team in self.teams:
-                self.waiting['player'] = player
-                self.waiting['amount'] = data.amount
-                self.waiting['team'] = data.team
-
                 if data.amount >= self.min_bet:
                     bet_allowed = True
 
@@ -261,7 +260,16 @@ class BetMania(AppConfig):
                             break
 
                     if bet_allowed:
-                        await self.instance.command_manager.execute(player, '/payin', str(data.amount))
+                        try:
+                            async with self.lock:
+                                amount = abs(int(data.amount))
+                                bill_id = await self.instance.gbx('SendBill', player.login, amount,
+                                                                  'BetMania: Betting {} planets on team {}!'
+                                                                  .format(amount, data.team), '')
+                                self.bets[bill_id] = dict(player=player, amount=amount, team=data.team)
+
+                        except ValueError:
+                            await self.instance.chat('$i$f00The amount should be a numeric value.', player)
 
                 else:
                     await self.instance.chat(
@@ -270,25 +278,18 @@ class BetMania(AppConfig):
 
             else:
                 await self.instance.chat(
-                    '$s$FFF//Bet$1EFMania$FFF: Please specify the team you want to place your bet on. Allowed arguments are \'blue\' and \'red\'',
+                    '$s$FFF//Bet$1EFMania$FFF: Please specify the team you want to place your bet on. Allowed '
+                    'arguments are \'blue\' and \'red\'',
                     player)
         else:
             await self.instance.chat(
-                '$s$FFF//Bet$1EFMania$FFF: There\'s no open bet at the moment. Please try again later (or ask an ServerOp to open one ;)',
+                '$s$FFF//Bet$1EFMania$FFF: There\'s no open bet at the moment. Please try again later (or ask an '
+                'ServerOp to open one ;)',
                 player)
 
     async def receive_bet(self, bill_id, state, state_name, transaction_id, **kwargs):
         # Callback method when bill_updated signal is received. Ensures that the BetMania vars are only updated if a payment has occured
-        if (len(self.waiting) > 0) or (bill_id in self.bets):
-            if bill_id not in self.bets:
-                self.bets[bill_id] = {
-                    'player': self.waiting['player'],
-                    'amount': self.waiting['amount'],
-                    'team': self.waiting['team']
-                }
-
-                self.waiting.clear()
-
+        if bill_id in self.bets:
             async with self.lock:
                 if state == 4:
                     await self.instance.chat(
@@ -305,6 +306,7 @@ class BetMania(AppConfig):
                         self.supporters[self.bets[bill_id]['team']][self.bets[bill_id]['player'].login] = self.bets[bill_id]['amount']
 
                     del self.bets[bill_id]
+
                 elif state > 4:
                     await self.instance.chat(
                         '$s$FFF//Bet$1EFMania$FFF: Transaction refused or failed! No bet was placed!',
@@ -312,7 +314,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.0-0 $FFF(Subsystem v2)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.1-0 $FFF(Subsystem v3)', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)

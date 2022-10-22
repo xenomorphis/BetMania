@@ -30,21 +30,9 @@ class TransactionHelper(AppConfig):
 
         await self.instance.command_manager.register(
             Command(command='payout', target=self.payout, perms='transactionhelper:payout', admin=True)
-                .add_param(name='login', required=True, type=str)
-                .add_param(name='amount', required=True, type=int),
-            Command(command='payin', target=self.payin).add_param(name='amount', required=True, type=int),
+            .add_param(name='login', required=True, type=str)
+            .add_param(name='amount', required=True, type=int)
         )
-
-    async def payin(self, player, data, **kwargs):
-        try:
-            async with self.lock:
-                amount = abs(int(data.amount))
-                bill_id = await self.instance.gbx('SendBill', player.login, amount,
-                                                  'BetMania: Paying {} planets as stake for a bet!'.format(amount), '')
-                self.current_bills[bill_id] = dict(bill=bill_id, player=player, amount=amount)
-
-        except ValueError:
-            await self.instance.chat('$i$f00The amount should be a numeric value.', player)
 
     async def payout(self, player, data, **kwargs):
         try:
