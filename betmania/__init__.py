@@ -113,7 +113,7 @@ class BetMania(AppConfig):
         # Register callback.
         self.context.signals.listen(mp_signals.other.bill_updated, self.receive_bet)
 
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.2.1 $FFF(Subsystem v2) online')
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2 online')
 
     async def open_bet(self, player, data, **kwargs):
         if not self.bet_current:
