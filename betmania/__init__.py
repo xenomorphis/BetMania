@@ -128,13 +128,9 @@ class BetMania(AppConfig):
                 new_config = await self.setting_bet_config_teams.get_value()
                 self.teams = new_config.split(',')
 
-                for team in self.teams:
-                    self.supporters[team] = dict()
-                    self.stack[team] = 0
-            else:
-                for team in self.teams:
-                    self.supporters[team].clear()
-                    self.stack[team] = 0
+            for team in self.teams:
+                self.supporters[team].clear()
+                self.stack[team] = 0
 
             self.stake = 0
             self.waiting.clear()
