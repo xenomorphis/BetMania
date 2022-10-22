@@ -118,20 +118,12 @@ class BetMania(AppConfig):
     async def open_bet(self, player, data, **kwargs):
         if not self.bet_current:
             # Initializes vars and sets bet to open (it's more or less an init-function)
+            await self.reconfigure_teams()
+
             self.bet_open = True
             self.bet_current = True
             self.bets.clear()
             self.min_bet = await self.setting_bet_minimum_stake.get_value()
-
-            if self.reconfigure:
-                self.reconfigure = False
-                new_config = await self.setting_bet_config_teams.get_value()
-                self.teams = new_config.split(',')
-
-            for team in self.teams:
-                self.supporters[team].clear()
-                self.stack[team] = 0
-
             self.stake = 0
             self.waiting.clear()
 
