@@ -5,6 +5,9 @@ BetMania
 Changelog
 -----------
 
+``0.3.2``
+    | Feature: Transfers the ``TransactionHelper`` subsystem completely into the main application
+
 ``0.3.1``
     | Feature: Migrates ``/payin`` functionality from TransactionHelper to BetMania
     | Feature: Adds a first draft for the apps main UI
