@@ -29,7 +29,6 @@ class BetMania(AppConfig):
         self.supporters = dict()
         self.teams = list()
         self.team_colors = dict()
-        self.waiting = dict()
 
         self.lock = asyncio.Lock()
 
@@ -125,7 +124,6 @@ class BetMania(AppConfig):
             self.bets.clear()
             self.min_bet = await self.setting_bet_minimum_stake.get_value()
             self.stake = 0
-            self.waiting.clear()
 
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET IS NOW OPEN! //')
             await self.instance.chat(
