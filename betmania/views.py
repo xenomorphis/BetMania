@@ -1,9 +1,9 @@
 from pyplanet.contrib.player.exceptions import PlayerNotFound
 from pyplanet.views.generics.list import ManualListView
+from pyplanet.views.generics.widget import WidgetView
 
 
 class SupportersListView(ManualListView):
-
     app = None
 
     title = ''
@@ -52,3 +52,36 @@ class SupportersListView(ManualListView):
             items.append({'player_name': supporter, 'bet_amount': self.app.supporters[self.team][login]})
 
         return items
+
+
+class ServerInfoWidget(WidgetView):
+    widget_x = -160
+    widget_y = -50
+    z_index = 60
+
+    template_name = 'betmania/main.xml'
+
+    def __init__(self, app):
+        """
+        :param app: App instance.
+        :type app: pyplanet.apps.contrib.info.Info
+        """
+        super().__init__(self)
+        self.app = app
+        self.manager = app.context.ui
+        self.id = 'betmania__main_window'
+
+    async def get_context_data(self):
+        context = await super().get_context_data()
+
+        if self.app.bet_open:
+            bet_status = 'OPEN'
+        else:
+            bet_status = 'CLOSED'
+
+        context.update({
+            'bet_status': bet_status,
+            'current_stake': self.app.stake,
+        })
+
+        return context
