@@ -23,7 +23,6 @@ class BetMania(AppConfig):
         self.bet_current = False
         self.bets = dict()
         self.min_bet = 1
-        self.reconfigure = False
         self.stack = dict()
         self.stake = 0
         self.supporters = dict()
@@ -335,9 +334,7 @@ class BetMania(AppConfig):
                                      player)
 
     async def reconfigure_teams(self, *args, **kwargs):
-        if self.bet_current:
-            self.reconfigure = True
-        else:
+        if not self.bet_current:
             team_config = await self.setting_bet_config_teams.get_value()
             self.teams = team_config.split(',')
 
