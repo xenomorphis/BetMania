@@ -5,8 +5,6 @@ import math
 from pyplanet.apps.config import AppConfig
 from pyplanet.contrib.command import Command
 
-from pyplanet.apps.core.maniaplanet import callbacks as mp_signals
-
 logger = logging.getLogger(__name__)
 
 

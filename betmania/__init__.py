@@ -1,4 +1,5 @@
 import asyncio
+import math
 
 from pyplanet.apps.config import AppConfig
 from .views import SupportersListView
@@ -12,7 +13,7 @@ class BetMania(AppConfig):
     # default settings
     name = 'pyplanet.apps.contrib.betmania'
     game_dependencies = ['trackmania']
-    app_dependencies = ['core.maniaplanet', 'transactionhelper']
+    app_dependencies = ['core.maniaplanet']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -176,12 +177,20 @@ class BetMania(AppConfig):
                         .format(self.team_colors[data.team], data.team, str(quota)))
 
                     for supporter in self.supporters[data.team]:
-                        payout = round(self.supporters[data.team][supporter] * quota)
+                        try:
+                            amount = abs(int(round(self.supporters[data.team][supporter] * quota)))
+                            planets = await self.instance.gbx('GetServerPlanets')
 
-                        await self.instance.chat(
-                            '$s$FFF//Bet$1EFMania$FFF: Congrats! Team {}{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
-                            .format(self.team_colors[data.team], data.team, str(payout)), supporter)
-                        await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
+                            await self.instance.chat(
+                                '$s$FFF//Bet$1EFMania$FFF: Congrats! Team {}{} $FFFwon. You receive $222{} $FFFplanets as your bet payout.'
+                                .format(self.team_colors[data.team], data.team, str(amount)), supporter)
+
+                            if amount <= (planets - 2 - math.floor(amount * 0.05)):
+                                async with self.lock:
+                                    await self.instance.gbx('Pay', data.login, amount, 'Bet payout from the server')
+
+                        except ValueError:
+                            await self.instance.chat('$z$s$fff» $i$f00The amount should be a numeric value.', player)
 
                 else:
                     await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Total stake is zero, no payout this time!')
@@ -206,8 +215,17 @@ class BetMania(AppConfig):
 
             for team in self.teams:
                 for supporter in self.supporters[team]:
-                    payout = self.supporters[team][supporter]
-                    await self.instance.command_manager.execute(player, '//payout', supporter, str(payout))
+                    try:
+                        amount = abs(int(self.supporters[team][supporter]))
+                        planets = await self.instance.gbx('GetServerPlanets')
+
+                        if amount <= (planets - 2 - math.floor(amount * 0.05)):
+                            async with self.lock:
+                                await self.instance.gbx('Pay', data.login, amount, 'Bet payback from the server')
+
+                    except ValueError:
+                        await self.instance.chat('$z$s$fff» $i$f00The amount should be a numeric value.', player)
+
                 self.supporters[team].clear()
                 self.stack[team] = 0
 
@@ -314,7 +332,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.1-0 $FFF(Subsystem v3)', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-0', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
