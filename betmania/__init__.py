@@ -150,7 +150,7 @@ class BetMania(AppConfig):
 
             if data.team in self.teams:
                 # data.team contains the winning team as provided by /resolve <team>
-                self.stake = self.calc_stake()
+                self.stake = await self.calc_stake()
 
                 if self.stack[data.team] > 0:
                     quota = round(self.stake / self.stack[data.team], 3)
@@ -301,7 +301,7 @@ class BetMania(AppConfig):
                                 self.bets[bill_id]['team']))
 
                     self.stack[self.bets[bill_id]['team']] += self.bets[bill_id]['amount']
-                    self.stake = self.calc_stake()
+                    self.stake = await self.calc_stake()
 
                     if self.bets[bill_id]['player'].login in self.supporters[self.bets[bill_id]['team']]:
                         self.supporters[self.bets[bill_id]['team']][self.bets[bill_id]['player'].login] += self.bets[bill_id]['amount']
@@ -356,14 +356,14 @@ class BetMania(AppConfig):
     async def toggle_widget(self, *args, **kwargs):
         await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: UI will be added in a future version.')
 
-    def calc_stake(self):
+    async def calc_stake(self):
         stake = 0
 
         for team in self.teams:
             stake += self.stack[team]
 
-        deduct_amount = self.setting_bet_margin.get_value()
-        deduct_rel = self.setting_bet_margin_relative.get_value()
+        deduct_amount = await self.setting_bet_margin.get_value()
+        deduct_rel = await self.setting_bet_margin_relative.get_value()
 
         if deduct_rel:
             if abs(deduct_amount) > 100:
