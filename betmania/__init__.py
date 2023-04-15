@@ -181,10 +181,12 @@ class BetMania(AppConfig):
                     await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Total stake is zero, no payout this time!')
 
                 self.bet_current = False
+
             else:
+                allowed = ', '.join(self.teams)
                 await self.instance.chat(
-                    '$s$FFF//Bet$1EFMania$FFF: Please specify the winning team. Allowed arguments are \'blue\' and \'red\'',
-                    player)
+                    '$s$FFF//Bet$1EFMania$FFF: Please specify the winning team. Allowed arguments are {}'
+                    .format(allowed), player)
         else:
             await self.instance.chat(
                 '$s$FFF//Bet$1EFMania$FFF: There\'s no available bet at the moment that could be resolved.',
@@ -239,7 +241,7 @@ class BetMania(AppConfig):
                 view = SupportersListView(self, data.team)
                 await view.display(player.login)
             else:
-                await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Team {}{} $FFFhas  currently no supporters :('
+                await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Team {}{} $FFFhas currently no supporters :('
                                          .format(self.team_colors[data.team], data.team), player)
 
         else:
@@ -317,7 +319,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-2', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-3', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
