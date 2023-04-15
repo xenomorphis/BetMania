@@ -172,7 +172,7 @@ class BetMania(AppConfig):
 
                             if amount <= (planets - 2 - math.floor(amount * 0.05)):
                                 async with self.lock:
-                                    await self.instance.gbx('Pay', data.login, amount, 'Bet payout from the server')
+                                    await self.instance.gbx('Pay', supporter, amount, 'Bet payout from the server')
 
                         except ValueError:
                             await self.instance.chat('$z$s$fff» $i$f00The amount should be a numeric value.', player)
@@ -208,7 +208,7 @@ class BetMania(AppConfig):
 
                         if amount <= (planets - 2 - math.floor(amount * 0.05)):
                             async with self.lock:
-                                await self.instance.gbx('Pay', data.login, amount, 'Bet payback from the server')
+                                await self.instance.gbx('Pay', supporter, amount, 'Bet payback from the server')
 
                     except ValueError:
                         await self.instance.chat('$z$s$fff» $i$f00The amount should be a numeric value.', player)
@@ -319,7 +319,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-3', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-4', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
