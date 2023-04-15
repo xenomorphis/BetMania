@@ -317,7 +317,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-1', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-2', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
