@@ -1,7 +1,7 @@
 ========
 BetMania
 ========
-:Release: 2022-10-23
+:Release: 2023-04-19
 :Version: 0.3.2
 
 BetMania is a plugin for `PyPlanet <https://pypla.net/en/latest/index.html>`_ and provides an ingame betting system
@@ -62,20 +62,41 @@ the commands are well hidden behind stylish little buttons.
     | Writes the version number of the currently installed BetMania instance into the ingame chat.
 
 
-Modules
--------
-BetMania currently consists of two separate modules. It may be possible to combine both modules into one at some point
-in the future, but for now both modules are needed when using the plugin.
+Settings
+--------
+BetMania can be configured ingame via the following settings:
 
-betmania
-    Contains the core functionality and provides the necessary commands used by admins and players.
+``bet_config_teams``
+    | *Type: list(str)*
+    | *Default: blue,red*
+    | Configure the available betting targets (teams).
 
-transactionhelper
-    This module is a customized and simplified copy of ``pyplanet.apps.contrib.transactions``. It covers everything
-    transaction-related and provides the corresponding commands used by ``betmania`` itself. This additional
-    *abstraction layer* allowed me to focus entirely on the development of the main module since I didn't need to
-    worry about the details of how transaction handling works in PyPlanet. This module will possibly be obsolete in the
-    near future.
+``bet_config_team_colors``
+    | *Type: list(str)*
+    | *Default: $s$00F,$s$F00*
+    | Configures the highlighting colors used in chat announcements for each team.
+
+``bet_margin``
+    | *Type: int*
+    | *Default: 0*
+    | Defines the amount of planets deducted as transaction fees from the total stake before a bet
+    payout. Use values between 1 and 100 if bet_margin_relative is activated.
+
+``bet_margin_relative``
+    | *Type: bool*
+    | *Default: False*
+    | If set to ``True``, bet_margin is handled as a relative amount (xx % of the stake). By default
+    ``bet_margin`` will be used as an absolute amount (xxx planets).
+
+``bet_minimum_stake``
+    | *Type: int*
+    | *Default: 1*
+    | Defines the minimum amount of planets needed for placing a bet. A value of 1 accepts all stakes.
+
+``show_widget``
+    | *Type: bool*
+    | *Default: False*
+    | Shows / Hides the BetMania widget (currently unused).
 
 
 Roadmap
@@ -83,8 +104,6 @@ Roadmap
 A non-comprehensive list of enhancements planned for future releases. As this is a spare-time project there's no
 guarantee that the features listet here will be actually developed. So take it as a collection of ideas how this module could
 be improved beyond it's basic functionalities.
-
-* Adding some configuration options for more flexibility
 
 * Adding a GUI / widget for easier usability
 
