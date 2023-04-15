@@ -317,7 +317,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-0', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.2-1', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
@@ -377,9 +377,13 @@ class BetMania(AppConfig):
 
     async def debug(self, player, data, **kwargs):
         await self.instance.chat(
-            '$FFFbet_open: $000{} $FFF// bet_current: $000{} $FFF// stack_red: $F00{} $FFF// stack_blue: $00F{}'
-            .format(str(self.bet_open), str(self.bet_current), str(self.stack['red']), str(self.stack['blue'])),
+            '$FFFbet_open: $000{} $FFF// bet_current: $000{} $FFF// stack_red: $F00{} $FFF// stack_blue: $00F{} $FFF//'
+            ' stake: $000{}'
+            .format(str(self.bet_open), str(self.bet_current), str(self.stack['red']), str(self.stack['blue']),
+                    str(self.stake)),
             player)
         await self.instance.chat('$FFFEntries in supporters_red: $F00{} $FFF// Entries in supporters_blue: $00F{}'
                                  .format(str(len(self.supporters['red'])), str(len(self.supporters['blue']))), player)
         await self.instance.chat('$FFFEntries in supporters_red: $F00{}'.format(str(self.supporters['red'])), player)
+        await self.instance.chat('$FFFBets: $F00{}'.format(str(self.bets)), player)
+        await self.instance.chat('$FFFTeams: $F00{}'.format(str(self.teams)), player)
