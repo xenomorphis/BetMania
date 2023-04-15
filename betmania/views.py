@@ -44,7 +44,7 @@ class SupportersListView(ManualListView):
 
         for login in self.app.supporters[self.team]:
             try:
-                player = self.instance.player_manager.get_player(login)
+                player = await self.instance.player_manager.get_player(login)
                 supporter = player.nickname
             except PlayerNotFound:
                 supporter = login
