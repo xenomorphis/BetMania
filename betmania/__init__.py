@@ -23,6 +23,7 @@ class BetMania(AppConfig):
         self.bet_current = False
         self.bets = dict()
         self.min_bet = 1
+        self.max_bet = 2500
         self.stack = dict()
         self.stake = 0
         self.supporters = dict()
@@ -64,6 +65,12 @@ class BetMania(AppConfig):
             default=1,
         )
 
+        self.setting_bet_maximum_stake = Setting(
+            'bet_minimum_stake', 'Sets the maximum amount of planets allowed for placing a bet.', Setting.CAT_BEHAVIOUR,
+            type=int, description='Defines the maximum amount of planets allowed for placing a bet.',
+            default=2500,
+        )
+
         self.setting_show_widget = Setting(
             'bet_show_widget', 'Shows / Hides the BetMania widget', Setting.CAT_BEHAVIOUR, type=bool,
             description='Shows / Hides the BetMania widget (currently not used).',
@@ -92,7 +99,7 @@ class BetMania(AppConfig):
                     description='Places a configurable amount of planets on a bet.')
             .add_param(name='amount', required=True, type=int, help='Enter here how many planets you want to bet')
             .add_param(name='team', required=True, type=str,
-                       help='Enter the team you want to bet for. You\'ll receive a payout if your specified team wins ({}).'
+                       help='Enter the team you want to bet for ({}). You\'ll receive a payout if your specified team wins.'
                        .format(', '.join(self.teams))),
             Command(command='quota', target=self.show_bet_quota,
                     description='Returns the current payout quotas for both teams.'),
@@ -106,7 +113,8 @@ class BetMania(AppConfig):
 
         await self.context.setting.register(self.setting_bet_config_teams, self.setting_bet_config_team_colors,
                                             self.setting_bet_margin, self.setting_bet_margin_relative,
-                                            self.setting_bet_minimum_stake, self.setting_show_widget)
+                                            self.setting_bet_minimum_stake, self.setting_bet_maximum_stake,
+                                            self.setting_show_widget)
 
         await self.reconfigure_teams()
 
@@ -124,12 +132,14 @@ class BetMania(AppConfig):
             self.bet_current = True
             self.bets.clear()
             self.min_bet = await self.setting_bet_minimum_stake.get_value()
+            self.max_bet = await self.setting_bet_maximum_stake.get_value()
             self.stake = 0
 
             await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: BET IS NOW OPEN! //')
             await self.instance.chat(
-                '$FFFA bet has been opened. Place your stakes now with \'/bet XXX red\' or \'/bet XXX blue\'. '
-                'Minimum stake for this bet is $1EF{} $FFFplanets. Good luck!'.format(self.min_bet))
+                '$FFFA bet has been opened. Place your stakes now with \'/bet <amount> <team>\'. '
+                'Minimum stake for this bet is $1EF{} $FFFplanets, maximum stake is $FE1{} $FFFplanets. Good luck!'
+                .format(self.min_bet, self.max_bet))
 
         else:
             await self.instance.chat(
@@ -252,7 +262,12 @@ class BetMania(AppConfig):
         # Checks first if bet is open. Allows player to bet planets via donating them (works the same way)
         if self.bet_open:
             if data.team in self.teams:
-                if data.amount >= self.min_bet:
+                total_stake = data.amount
+
+                if player.login in self.supporters[data.team]:
+                    total_stake += self.supporters[data.team][player.login]
+
+                if self.min_bet <= total_stake <= self.max_bet:
                     bet_allowed = True
 
                     for team in self.teams:
@@ -279,8 +294,9 @@ class BetMania(AppConfig):
 
                 else:
                     await self.instance.chat(
-                        '$s$FFF//Bet$1EFMania$FFF: Your stake is not high enough. Current minimum stake is {} planets.'
-                        .format(self.min_bet), player)
+                        '$s$FFF//Bet$1EFMania$FFF: Your stake ($CCC{}$FFF) does not match the stake limits. Use an '
+                        'amount between $1EF{} $FFFand $1EF{} $FFFplanets please.'
+                        .format(total_stake, self.min_bet, self.max_bet), player)
 
             else:
                 await self.instance.chat(
@@ -319,7 +335,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-0', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-1', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
