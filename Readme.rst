@@ -2,7 +2,7 @@
 BetMania
 ========
 :Release: 2023-04-19
-:Version: 0.3.2
+:Version: 0.3.3
 
 BetMania is a plugin for `PyPlanet <https://pypla.net/en/latest/index.html>`_ and provides an ingame betting system
 for Trackmania. Since version 0.2.0 the codebase in the ``master``-branch can be considered 'stable'. Don't consider
@@ -92,6 +92,11 @@ BetMania can be configured ingame via the following settings:
     | *Type: int*
     | *Default: 1*
     | Defines the minimum amount of planets needed for placing a bet. A value of 1 accepts all stakes.
+
+``bet_maximum_stake``
+    | *Type: int*
+    | *Default: 2500*
+    | Defines the maximum amount of planets allowed for placing a bet.
 
 ``show_widget``
     | *Type: bool*
