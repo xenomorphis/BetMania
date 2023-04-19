@@ -194,8 +194,8 @@ class BetMania(AppConfig):
 
             else:
                 await self.instance.chat(
-                    '$s$FFF//Bet$1EFMania$FFF: Please specify the winning team. Allowed arguments are {}'
-                    .format(', '.join(self.teams)), player)
+                    '$s$FFF//Bet$1EFMania$FFF: Please specify the winning team. Allowed arguments are $1EF{}'
+                    .format('$FFF, $1EF'.join(self.teams)), player)
         else:
             await self.instance.chat(
                 '$s$FFF//Bet$1EFMania$FFF: There\'s no available bet at the moment that could be resolved.',
@@ -235,10 +235,10 @@ class BetMania(AppConfig):
             for team in self.teams:
                 if self.stack[team] > 0:
                     quota = round(self.stake / self.stack[team], 3)
-                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Quota for {}{} $FFFWin is {}'
+                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: Quota for {}{} $FFFwin is {}'
                                              .format(self.team_colors[team], team, str(quota)), player)
                 else:
-                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: No current Quota for Team {}{} $FFFWin'
+                    await self.instance.chat('$s$FFF//Bet$1EFMania$FFF: No current Quota for Team {}{} $FFFwin'
                                              .format(self.team_colors[team], team), player)
 
         else:
@@ -299,7 +299,7 @@ class BetMania(AppConfig):
             else:
                 await self.instance.chat(
                     '$s$FFF//Bet$1EFMania$FFF: Please specify the team you want to place your bet on. Allowed '
-                    'arguments are {}'.format(', '.join(self.teams)), player)
+                    'arguments are $1EF{}'.format('$FFF, $1EF'.join(self.teams)), player)
         else:
             await self.instance.chat(
                 '$s$FFF//Bet$1EFMania$FFF: There\'s no open bet at the moment. Please try again later (or ask an '
@@ -333,7 +333,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-2', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-3', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
