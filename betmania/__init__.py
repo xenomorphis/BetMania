@@ -66,7 +66,7 @@ class BetMania(AppConfig):
         )
 
         self.setting_bet_maximum_stake = Setting(
-            'bet_minimum_stake', 'Sets the maximum amount of planets allowed for placing a bet.', Setting.CAT_BEHAVIOUR,
+            'bet_maximum_stake', 'Sets the maximum amount of planets allowed for placing a bet.', Setting.CAT_BEHAVIOUR,
             type=int, description='Defines the maximum amount of planets allowed for placing a bet.',
             default=2500,
         )
@@ -91,21 +91,19 @@ class BetMania(AppConfig):
                     description='Closes an open bet and prevents players from placing new bets.'),
             Command(command='resolvebet', aliases=['resolve'], target=self.resolve_bet, perms='betmania:resolve_bet',
                     admin=True, description='Closes and resolves a bet.')
-            .add_param(name='team', required=True, type=str, help='Please specify the winning team ({})'
-                       .format(', '.join(self.teams))),
+            .add_param(name='team', required=True, type=str, help='Specify the winning team'),
             Command(command='resetbet', target=self.reset_bet, perms='betmania:resolve_bet', admin=True,
                     description='Resets an already opened bet. Use only when necessary!'),
             Command(command='bet', target=self.place_bet,
                     description='Places a configurable amount of planets on a bet.')
             .add_param(name='amount', required=True, type=int, help='Enter here how many planets you want to bet')
             .add_param(name='team', required=True, type=str,
-                       help='Enter the team you want to bet for ({}). You\'ll receive a payout if your specified team wins.'
-                       .format(', '.join(self.teams))),
+                       help='Enter the team you want to bet for. You\'ll receive a payout if your specified team wins.'),
             Command(command='quota', target=self.show_bet_quota,
                     description='Returns the current payout quotas for both teams.'),
             Command(command='supporters', target=self.show_supporters,
                     description='Shows a list of all current supporters of a specified team.')
-            .add_param(name='team', required=True, type=str, help='Enter which teams supporters you want to see.'),
+            .add_param(name='team', required=True, type=str, help='Enter the team whose supporters you want to see.'),
             Command(command='bmdebug', target=self.debug, perms='betmania:resolve_bet', admin=True,
                     description='For development purposes.'),
             Command(command='betmania', target=self.betmania_info, description='Displays intro message'),
@@ -335,7 +333,7 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-1', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-2', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
