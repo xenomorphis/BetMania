@@ -333,12 +333,14 @@ class BetMania(AppConfig):
                     del self.bets[bill_id]
 
     async def betmania_info(self, player, data, **kwargs):
-        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-3', player)
+        await self.instance.chat('$s$FFF//Bet$1EFMania $FFFBetting System v$FF00.3.3-4', player)
 
         await self.instance.chat('$s$1EF/bet <amount> <team>$FFF: $iBets an individual amount of planets on a team.',
                                  player)
         await self.instance.chat('$s$1EF/quota$FFF: $iShows the current payout quotas for each possible result.',
                                  player)
+        await self.instance.chat('$s$1EF/supporters <team>$FFF: $iShows a list of all current supporters of the '
+                                 'specified team.', player)
 
         if player.level > 0:
             await self.instance.chat('$s$1EF//openbet$FFF: $iOpens up a new bet or reopens a closed one.', player)
