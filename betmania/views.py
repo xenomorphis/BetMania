@@ -1,6 +1,6 @@
 from pyplanet.contrib.player.exceptions import PlayerNotFound
+from pyplanet.views import TemplateView
 from pyplanet.views.generics.list import ManualListView
-from pyplanet.views.generics.widget import WidgetView
 
 
 class SupportersListView(ManualListView):
@@ -54,22 +54,28 @@ class SupportersListView(ManualListView):
         return items
 
 
-class ServerInfoWidget(WidgetView):
+class ServerInfoWidget(TemplateView):
     widget_x = -160
     widget_y = -50
     z_index = 60
 
     template_name = 'betmania/main.xml'
 
-    def __init__(self, app):
+    def __init__(self, app, *args, **kwargs):
         """
         :param app: App instance.
         :type app: pyplanet.apps.contrib.info.Info
         """
-        super().__init__(self)
+        super().__init__(*args, **kwargs)
         self.app = app
-        self.manager = app.context.ui
-        self.id = 'betmania__main_window'
+        self.commands = dict()
+        self.id = 'betmania__widget'
+        self.manager = self.app.context.ui
+
+    async def on_start(self):
+        self.commands = {
+            'open_main_window': '/list',
+        }
 
     async def get_context_data(self):
         context = await super().get_context_data()
@@ -85,3 +91,12 @@ class ServerInfoWidget(WidgetView):
         })
 
         return context
+
+    async def display(self, **kwargs):
+        return await super().display(**kwargs)
+
+    async def handle_catch_all(self, player, action, values, **kwargs):
+        if action not in self.commands:
+            return
+
+        await self.app.instance.command_manager.execute(player, self.commands[action])
