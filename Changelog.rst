@@ -8,6 +8,8 @@ Changelog
 ``0.3.3``
     | Feature: Adds an option to limit the maximum stake per player and bet
     | Update: Uses the appropriate team colors in chat announcements & fixes some typos
+    | Update: Removes the now obsolete ``TransactionHelper`` subsystem
+    | Fix: ``self.instance`` is not defined inside ``ListView`` subclasses
 
 ``0.3.2``
     | Feature: Transfers the ``TransactionHelper`` subsystem completely into the main application

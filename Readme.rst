@@ -1,7 +1,7 @@
 ========
 BetMania
 ========
-:Release: 2023-04-19
+:Release: 2023-04-30
 :Version: 0.3.3
 
 BetMania is a plugin for `PyPlanet <https://pypla.net/en/latest/index.html>`_ and provides an ingame betting system
