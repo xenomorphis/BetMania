@@ -1,0 +1,12 @@
+<frame pos="-120 50">
+    <quad pos="0 0" z-index="80" size="10 12" bgcolor="00000060"/>
+    <quad pos="0 0" z-index="100" size="10 10" image="https://https://assets.team-apex.eu/Misc/BetMania_Logo.png"
+          autoscale="0" opacity ="0.8" halign="center" valign="center" action="{{ id }}__open_main_window"
+          class="distraction-hide" />
+
+    {% if bet_open %}
+        <label pos="0 -10.6" z-index="1" size="6.5 6" text="🕑{{ current_stake }}" halign="center" valign="center2"
+               id="betmania_widget_current_stake" textsize="1.2" textcolor="ffee1100"
+               action="{{ id }}__open_main_window" />
+    {% endif %}
+</frame>
